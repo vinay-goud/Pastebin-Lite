@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 interface PasteViewClientProps {
     content: string;
@@ -42,7 +43,7 @@ export default function PasteViewClient({ content, expiresAt, remainingViews }: 
         return () => clearInterval(interval);
     }, [expiresAt]);
 
-    // Client-side expired state (for UX only - server already returned 200)
+    // Client-side expired state
     if (expired) {
         return (
             <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -54,9 +55,9 @@ export default function PasteViewClient({ content, expiresAt, remainingViews }: 
                     </div>
                     <h1 className="text-xl font-semibold text-gray-900 mb-2">Paste Expired</h1>
                     <p className="text-gray-500 text-sm mb-6">This paste has reached its time limit.</p>
-                    <a href="/" className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors">
+                    <Link href="/" className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors">
                         Create New Paste
-                    </a>
+                    </Link>
                 </div>
             </main>
         );
@@ -66,7 +67,6 @@ export default function PasteViewClient({ content, expiresAt, remainingViews }: 
         <main className="min-h-screen bg-gray-50 py-12 px-4">
             <div className="max-w-3xl mx-auto">
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    {/* Header */}
                     <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                         <h1 className="text-lg font-semibold text-gray-900">Pastebin Lite</h1>
                         <div className="flex items-center gap-4 text-sm text-gray-500">
@@ -81,19 +81,15 @@ export default function PasteViewClient({ content, expiresAt, remainingViews }: 
                             )}
                         </div>
                     </div>
-
-                    {/* Content */}
                     <div className="p-6">
                         <pre className="bg-gray-900 text-gray-100 p-4 rounded-md overflow-auto text-sm font-mono whitespace-pre-wrap break-words">
                             {content}
                         </pre>
                     </div>
-
-                    {/* Footer */}
                     <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                        <a href="/" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                        <Link href="/" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
                             ← Create new paste
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </div>
