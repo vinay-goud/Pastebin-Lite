@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pastebin-Lite
 
-## Getting Started
+A secure, serverless-ready Pastebin application built with Next.js and Neon (Postgres).
 
-First, run the development server:
+## Project Description
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Pastebin-Lite allows users to share text snippets with optional security constraints:
+- **Time-to-Live (TTL)**: Pastes automatically expire after a set duration.
+- **View Limits**: Pastes are deleted after being viewed a specific number of times.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How to Run Locally
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Configure Environment**:
+   Create a `.env.local` file in the root directory:
+   ```env
+   DATABASE_URL=postgres://<user>:<password>@<host>/<database>?sslmode=require
+   TEST_MODE=1
+   ```
 
-## Learn More
+3. **Run Development Server**:
+   ```bash
+   npm run dev
+   ```
+   Access the app at `http://localhost:3000`.
 
-To learn more about Next.js, take a look at the following resources:
+## Persistence Layer
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Choice**: Neon (Serverless Postgres)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Reasoning**:
+- **Persistence**: Unlike in-memory storage, Postgres ensures data survives application restarts and serverless cold starts.
+- **Safety**: We use a global singleton connection pool (`lib/db.ts`) to prevent connection exhaustion in serverless environments (e.g., Vercel Functions).
+- **Updates**: View counts are handled with atomic SQL `UPDATE` queries to prevent race conditions and ensure data integrity.
 
-## Deploy on Vercel
+## Design Decisions
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Atomic View Burning**: When a paste is viewed (via API or Browser), a single database transaction fetches the content and decrements the view count. If the count reaches zero, the transaction ensures no further views are possible.
+- **Deterministic Testing**: The application respects the `x-test-now-ms` header (when `TEST_MODE=1`) to allow automated tests to simulate specific times for expiry verification.
+- **Strict Validation**: All inputs (TTL, View Counts) are strictly validated on the server side to ensure they are positive integers.
